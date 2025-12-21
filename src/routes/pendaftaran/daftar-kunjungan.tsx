@@ -82,10 +82,13 @@ export default function DaftarKunjunganPage() {
                                             {(pasien) => (
                                                 <button
                                                     type="button"
-                                                    onClick={() => setSelectedPasien(pasien)}
+                                                    onClick={() => {
+                                                        console.log("Selecting pasien:", pasien);
+                                                        setSelectedPasien(pasien);
+                                                    }}
                                                     class={`w-full text-left p-3 rounded-xl border transition-all ${selectedPasien()?.id === pasien.id
-                                                            ? 'bg-emerald-500/20 border-emerald-500/50'
-                                                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                                        ? 'bg-emerald-500/20 border-emerald-500/50'
+                                                        : 'bg-white/5 border-white/10 hover:bg-white/10'
                                                         }`}
                                                 >
                                                     <p class="text-white font-medium">{pasien.nama}</p>
