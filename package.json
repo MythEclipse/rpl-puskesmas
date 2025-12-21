@@ -2,9 +2,9 @@
   "name": "example-with-prisma",
   "type": "module",
   "scripts": {
-    "dev": "vinxi dev",
+    "dev": "PORT=4050 vinxi dev",
     "build": "vinxi build",
-    "start": "vinxi start",
+    "start": "PORT=4050 vinxi start",
     "db:seed": "bunx tsx prisma/seed.ts"
   },
   "devDependencies": {
