@@ -6,12 +6,198 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
+// ============================================================================
+// USER - Pengguna sistem dengan berbagai role
+// ============================================================================
 model User {
-  id       String @id @default(uuid())
-  username String @unique
-  password String
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String
+  namaLengkap String   @default("")
+  role        String   @default("pendaftaran") // pendaftaran, dokter, apoteker, kepalaPuskesmas, admin
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi: Dokter membuat rekam medis
+  rekamMedis RekamMedis[]
+  // Relasi: Apoteker memproses resep
+  resepDiproses Resep[]
+}
+
+// ============================================================================
+// PASIEN - Data pasien
+// ============================================================================
+model Pasien {
+  id           String   @id @default(uuid())
+  noRM         String   @unique // Nomor Rekam Medis (auto-generated)
+  nik          String   @unique
+  nama         String
+  tanggalLahir DateTime
+  jenisKelamin String   // L atau P
+  alamat       String
+  noTelp       String
+  noBPJS       String?  // Opsional, untuk pasien BPJS
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  kunjungan Kunjungan[]
+}
+
+// ============================================================================
+// POLI - Unit layanan di puskesmas
+// ============================================================================
+model Poli {
+  id        String   @id @default(uuid())
+  kode      String   @unique
+  nama      String
+  deskripsi String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  kunjungan Kunjungan[]
+}
+
+// ============================================================================
+// KUNJUNGAN - Data kunjungan pasien
+// ============================================================================
+model Kunjungan {
+  id           String   @id @default(uuid())
+  nomorAntrean Int
+  tanggal      DateTime @default(now())
+  status       String   @default("menunggu") // menunggu, dipanggil, diperiksa, selesai
+  tipePasien   String   // umum, bpjs
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pasienId String
+  pasien   Pasien @relation(fields: [pasienId], references: [id])
+
+  poliId String
+  poli   Poli   @relation(fields: [poliId], references: [id])
+
+  rekamMedis RekamMedis?
+  pembayaran Pembayaran?
+  klaimBPJS  KlaimBPJS?
+}
+
+// ============================================================================
+// REKAM MEDIS - Catatan pemeriksaan oleh dokter
+// ============================================================================
+model RekamMedis {
+  id          String   @id @default(uuid())
+  keluhan     String
+  pemeriksaan String
+  diagnosis   String
+  tandaVital  String   // JSON: {tekananDarah, suhu, nadi, pernapasan, beratBadan, tinggiBadan}
+  catatan     String?
+  createdAt   DateTime @default(now())
+
+  kunjunganId String    @unique
+  kunjungan   Kunjungan @relation(fields: [kunjunganId], references: [id])
+
+  dokterId String
+  dokter   User   @relation(fields: [dokterId], references: [id])
+
+  resep Resep?
+}
+
+// ============================================================================
+// OBAT - Master data obat
+// ============================================================================
+model Obat {
+  id        String   @id @default(uuid())
+  kode      String   @unique
+  nama      String
+  satuan    String   // tablet, kapsul, sirup, dll
+  stok      Int      @default(0)
+  harga     Float    @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  detailResep DetailResep[]
+}
+
+// ============================================================================
+// RESEP - Resep obat dari dokter
+// ============================================================================
+model Resep {
+  id        String   @id @default(uuid())
+  status    String   @default("dibuat") // dibuat, diproses, selesai, tidakLengkap
+  catatan   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rekamMedisId String     @unique
+  rekamMedis   RekamMedis @relation(fields: [rekamMedisId], references: [id])
+
+  apotekerId String?
+  apoteker   User?   @relation(fields: [apotekerId], references: [id])
+
+  detailResep DetailResep[]
+}
+
+// ============================================================================
+// DETAIL RESEP - Item obat dalam resep
+// ============================================================================
+model DetailResep {
+  id        String   @id @default(uuid())
+  jumlah    Int
+  aturan    String   // Cara pakai: 3x1 sehari sesudah makan
+  createdAt DateTime @default(now())
+
+  resepId String
+  resep   Resep  @relation(fields: [resepId], references: [id], onDelete: Cascade)
+
+  obatId String
+  obat   Obat   @relation(fields: [obatId], references: [id])
+}
+
+// ============================================================================
+// PEMBAYARAN - Untuk pasien umum
+// ============================================================================
+model Pembayaran {
+  id           String   @id @default(uuid())
+  totalLayanan Float    @default(0)
+  totalObat    Float    @default(0)
+  total        Float    @default(0)
+  status       String   @default("belumBayar") // belumBayar, lunas
+  metodeBayar  String?  // tunai, debit, dll
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  kunjunganId String    @unique
+  kunjungan   Kunjungan @relation(fields: [kunjunganId], references: [id])
+}
+
+// ============================================================================
+// KLAIM BPJS - Untuk pasien BPJS
+// ============================================================================
+model KlaimBPJS {
+  id         String   @id @default(uuid())
+  nomorKlaim String   @unique
+  status     String   @default("pending") // pending, diajukan, disetujui, ditolak
+  totalKlaim Float    @default(0)
+  catatan    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  kunjunganId String    @unique
+  kunjungan   Kunjungan @relation(fields: [kunjunganId], references: [id])
+}
+
+// ============================================================================
+// TARIF LAYANAN - Master data tarif per poli
+// ============================================================================
+model TarifLayanan {
+  id        String   @id @default(uuid())
+  nama      String
+  tarif     Float
+  kategori  String   // konsultasi, tindakan, dll
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 }

@@ -9,7 +9,7 @@ export default function Login(props: RouteSectionProps) {
   const loggingIn = useSubmission(loginOrRegister);
 
   return (
-    <div class="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
+    <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-md">
         {/* Card */}
         <div class="relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 p-8 shadow-2xl">
@@ -22,31 +22,16 @@ export default function Login(props: RouteSectionProps) {
             <div class="text-center mb-8">
               <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 flex items-center justify-center">
                 <svg class="w-8 h-8 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <h1 class="text-3xl font-bold text-white mb-2">Masuk ke Sistem</h1>
-              <p class="text-white/60">Silakan masuk untuk melanjutkan</p>
+              <h1 class="text-3xl font-bold text-white mb-2">SI-Puskesmas</h1>
+              <p class="text-white/60">Sistem Informasi Manajemen Puskesmas</p>
             </div>
 
             <form action={loginOrRegister} method="post" class="space-y-6">
               <input type="hidden" name="redirectTo" value={props.params.redirectTo ?? "/"} />
-
-              {/* Login Type Toggle */}
-              <div class="flex rounded-xl bg-white/5 p-1 border border-white/10">
-                <label class="flex-1">
-                  <input type="radio" name="loginType" value="login" checked={true} class="peer sr-only" />
-                  <span class="flex items-center justify-center py-2.5 rounded-lg text-sm font-medium text-white/60 peer-checked:bg-gradient-to-r peer-checked:from-emerald-400 peer-checked:to-cyan-400 peer-checked:text-slate-900 transition-all cursor-pointer">
-                    Login
-                  </span>
-                </label>
-                <label class="flex-1">
-                  <input type="radio" name="loginType" value="register" class="peer sr-only" />
-                  <span class="flex items-center justify-center py-2.5 rounded-lg text-sm font-medium text-white/60 peer-checked:bg-gradient-to-r peer-checked:from-emerald-400 peer-checked:to-cyan-400 peer-checked:text-slate-900 transition-all cursor-pointer">
-                    Register
-                  </span>
-                </label>
-              </div>
+              <input type="hidden" name="loginType" value="login" />
 
               {/* Username Input */}
               <div class="space-y-2">
@@ -98,12 +83,23 @@ export default function Login(props: RouteSectionProps) {
                 </div>
               </Show>
             </form>
+
+            {/* Demo Credentials */}
+            <div class="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+              <p class="text-xs text-white/60 text-center mb-2">Demo Login:</p>
+              <div class="grid grid-cols-2 gap-2 text-xs text-white/40">
+                <div>admin / admin123</div>
+                <div>dokter1 / 123456</div>
+                <div>petugas1 / 123456</div>
+                <div>apoteker1 / 123456</div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
         <p class="text-center text-white/40 text-sm mt-6">
-          © 2024 Puskesmas. Sistem Informasi Manajemen Kesehatan.
+          © 2024 Puskesmas. Tugas RPL - Pemodelan Sistem Informasi.
         </p>
       </div>
     </div>

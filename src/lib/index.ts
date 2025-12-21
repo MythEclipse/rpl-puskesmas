@@ -6,7 +6,9 @@ import {
   logout as logoutSession,
   register,
   validatePassword,
-  validateUsername
+  validateUsername,
+  getCurrentUser,
+  type UserRole,
 } from "./server";
 
 export const getUser = query(async () => {
@@ -17,7 +19,12 @@ export const getUser = query(async () => {
     if (userId === undefined) throw new Error("User not found");
     const user = await db.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("User not found");
-    return { id: user.id, username: user.username };
+    return {
+      id: user.id,
+      username: user.username,
+      namaLengkap: user.namaLengkap,
+      role: user.role as UserRole,
+    };
   } catch {
     await logoutSession();
     throw redirect("/login");
@@ -37,7 +44,7 @@ export const loginOrRegister = action(async (formData: FormData) => {
       ? register(username, password)
       : login(username, password));
     const session = await getSession();
-    await session.update(d => {
+    await session.update((d) => {
       d.userId = user.id;
     });
   } catch (err) {
@@ -51,3 +58,12 @@ export const logout = action(async () => {
   await logoutSession();
   return redirect("/login");
 });
+
+// Re-export functions for use in components
+export { getCurrentUser } from "./server";
+export * from "./pasien";
+export * from "./kunjungan";
+export * from "./rekammedis";
+export * from "./resep";
+export * from "./laporan";
+export * from "./admin";
